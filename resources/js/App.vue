@@ -4,14 +4,14 @@
   <div class="layout-wrapper layout-content-navbar ">
   <div class="layout-container">
 
-     <SideMenu/>
+     <SideMenu v-if="store.get_token" />
     
 
     <!-- Layout page -->
     <div class="layout-page">
       <!-- BEGIN: Navbar-->
             <!-- Navbar -->
-<nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme" id="layout-navbar">
+<nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme" id="layout-navbar" v-if="store.get_token">
     
       <!--  Brand demo (display only for navbar-full and hide on below xl) -->
       
@@ -121,11 +121,11 @@
 
           <!-- Footer -->
                     <!-- Footer-->
-<footer class="content-footer footer bg-footer-theme">
+<footer class="content-footer footer bg-footer-theme" v-if="store.get_token">
   <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
     <div class="mb-2 mb-md-0">
 
-      , made with ❤️ by <a href="https://themeselection.com" target="_blank" class="footer-link fw-bolder">ThemeSelection</a>
+       made with ❤️ by <a href="https://themeselection.com" target="_blank" class="footer-link fw-bolder">ThemeSelection</a>
     </div>
     <div>
       <a href="https://themeselection.com/license/" class="footer-link me-4" target="_blank">License</a>
@@ -157,9 +157,15 @@
 </template>
 
 <script>
+
+import { useStore } from './store/auth'
+
 export default {
     name: 'Minipos11App',
-
+    setup(){
+      const store = useStore()
+      return {store}
+    },
     data() {
         return {
             
