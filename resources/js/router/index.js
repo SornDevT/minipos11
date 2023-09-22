@@ -37,10 +37,10 @@ const authMiddleware = (to, from, next) => {
 }
 
 export const routes = [
-    // {
-    //     path: '/',
-    //     redirect: '/store'
-    // },
+    {
+        path: '/',
+        redirect: '/store'
+    },
     {
         name: 'store',
         path: '/store',
@@ -86,7 +86,10 @@ export const routes = [
     {
         name: 'nopage',
         path: '/:pathMactch(.*)*',
-        component: NoPage
+        component: NoPage,
+        meta:{
+            middleware: [authMiddleware]
+        }
     }
 ];
 
@@ -101,9 +104,11 @@ const router = createRouter({
 router.beforeEach((to,from,next)=>{
     const token = localStorage.getItem("web_token");
     if(to.meta.middleware){
+        // console.log(token)
         to.meta.middleware.forEach(middleware => middleware(to,from,next))
     } else {
         if(to.path == "/login" || to.path == "/"){
+            
             if(token){
                 next({
                     path:"/store",
@@ -113,6 +118,7 @@ router.beforeEach((to,from,next)=>{
                 next();
             }
         } else {
+           
             next();
         }
     }
