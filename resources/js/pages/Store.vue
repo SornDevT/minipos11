@@ -48,9 +48,13 @@
     <div v-if="!ShowForm" class="table-responsive text-nowrap">
         <div class=" d-flex justify-content-between mb-2">
             <div class=" d-flex align-items-center">
-                <i class='bx bx-sort-up fs-4 me-2'></i>
+                <div class=" cursor-pointer" @click="ChacngSort()"> 
+                    <!-- {{ Sort }} -->
+                        <i class='bx bx-sort-up fs-4 me-2' v-if="Sort=='asc'"></i>
+                        <i class='bx bx-sort-down  fs-4 me-2' v-if="Sort=='desc'"></i>
+                </div>
       
-          <select id="defaultSelect" class="form-select">
+          <select id="defaultSelect" v-model="list_num" @change="GetStore()" class="form-select">
             <option value="5">5</option>
             <option value="10">10</option>
             <option value="20">20</option>
@@ -74,26 +78,39 @@
             <th>ຈັດການ</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody v-if="loading_table">
           <tr>
-            <td><i class="fab fa-angular fa-lg text-danger me-3"></i> <span class="fw-medium">Angular Project</span></td>
-            <td>Albert Cook</td>
+            <td colspan="5" class=" text-center ">
+                <div class="spinner-border spinner-border-sm text-success" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                ກຳລັງໂຫຼດ.....</td>
+          </tr>
+        </tbody>
+          <tbody v-else>
+          <tr v-for="list in StoreData.data" :key="list.id">
+            <td>{{ list.id }}</td>
+            <td>{{ list.image }}</td>
             <td>
-             ສສສສສ
+             {{ list.name }}
             </td>
-            <td><span class="badge bg-label-primary me-1">Active</span></td>
+            <td>{{ list.price_buy }}</td>
             <td>
               <div class="dropdown">
                 <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
                 <div class="dropdown-menu">
-                  <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-edit-alt me-1"></i> ແກ້ໄຂ</a>
-                  <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> ລຶບ</a>
+                  <a class="dropdown-item" @click="EditStore(list.id)" href="javascript:void(0);"><i class="bx bx-edit-alt me-1"></i> ແກ້ໄຂ</a>
+                  <a class="dropdown-item" @click="DeleteStore(list.id)" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> ລຶບ</a>
                 </div>
               </div>
             </td>
           </tr>
+          
         </tbody>
       </table>
+
+      <Pagination :pagination="StoreData" :offset="4" @paginate="GetStore($event)" />
+
     </div>
 
 
@@ -113,6 +130,10 @@ export default {
     },
     data() {
         return {
+            list_num: 5,
+            Sort:"asc",
+            StoreData:[],
+            EditID:'',
             ShowForm:false,
             FormStore:{
                 name:'',
@@ -121,7 +142,8 @@ export default {
                 price_sell:''
             },
             FormType: true,
-            loading:false
+            loading:false,
+            loading_table:false
         };
     },
 
@@ -145,6 +167,14 @@ export default {
     },
 
     methods: {
+        ChacngSort(){
+            if(this.Sort=="asc"){
+                this.Sort = "desc"
+            } else {
+                this.Sort = "asc"
+            }
+            this.GetStore()
+        },
         AddStore(){
             this.FormStore.name = ''
             this.FormStore.amount = ''
@@ -157,22 +187,21 @@ export default {
             this.ShowForm = false
         },
         SaveStore(){
-
             if(this.FormType){
                 // ເພີ່ມຂໍ້ມູນໃໝ່
-                console.log('Go!!')
+                // console.log('Go!!')
                 this.loading = true
-                setTimeout(()=>{
-                    console.log('Run.....')
+                // setTimeout(()=>{
+                    // console.log('Run.....')
                     axios.post("api/store/add",this.FormStore,{ headers:{ Authorization: 'Bearer '+ this.store.get_token}}).then((res)=>{
-                        this.ShowForm = false
+                        
                         this.loading = false
                         if(res.data.success){
-
+                            this.ShowForm = false
+                            this.GetStore()
                         } else {
 
                         }
-
                     }).catch((err)=>{
                         this.loading = false
                         console.log(err);
@@ -187,17 +216,114 @@ export default {
                         }
                     });
 
-                },3000)
+                // },2000)
 
                 
-
-
             } else {
                 // ອັບເດດຂໍ້ມູນ
+                this.loading = true
+                axios.post(`api/store/update/${this.EditID}`,this.FormStore,{ headers:{ Authorization: 'Bearer '+ this.store.get_token}}).then((res)=>{
+                        
+                        this.loading = false
+                        if(res.data.success){
+                            this.ShowForm = false
+                            this.GetStore()
+                        } else {
+
+                        }
+                    }).catch((err)=>{
+                        this.loading = false
+                        console.log(err);
+                        if(err){
+                            if(err.response.status == 401){
+                                this.store.remove_token()
+                                this.store.remove_user()
+                                localStorage.removeItem("web_token")
+                                localStorage.removeItem("web_user")
+                                this.$router.push("/login")
+                            }
+                        }
+                    })
+
             }
+
+        },
+        EditStore(id){
+                this.EditID = id
+                this.FormType = false
+
+                axios.get(`api/store/edit/${id}`,{ headers:{ Authorization: 'Bearer '+ this.store.get_token}}).then((res)=>{
+
+                    // console.log(res.data)
+                    this.FormStore = res.data
+                    this.ShowForm = true
+
+                }).catch((err)=>{
+                console.log(err)
+                if(err){
+                            if(err.response.status == 401){
+                                this.store.remove_token()
+                                this.store.remove_user()
+                                localStorage.removeItem("web_token")
+                                localStorage.removeItem("web_user")
+                                this.$router.push("/login")
+                            }
+                        }
+            })
+
+        },
+        DeleteStore(id){
+            axios.delete(`api/store/delete/${id}`,{ headers:{ Authorization: 'Bearer '+ this.store.get_token}}).then((res)=>{
+
+                    if(res.data.success){
+                        this.GetStore()
+                    } else {
+
+                    }
+
+                }).catch((err)=>{
+                console.log(err)
+                if(err){
+                        if(err.response.status == 401){
+                            this.store.remove_token()
+                            this.store.remove_user()
+                            localStorage.removeItem("web_token")
+                            localStorage.removeItem("web_user")
+                            this.$router.push("/login")
+                        }
+                    }
+                })
+        },
+        GetStore(page){
+            this.loading_table = true
+
+            // setTimeout(()=>{
+
+            axios.get(`api/store?page=${page}&sort=${this.Sort}&list_num=${this.list_num}`,{ headers:{ Authorization: 'Bearer '+ this.store.get_token}}).then((res)=>{
+                this.loading_table = false
+                this.StoreData = res.data
+
+            }).catch((err)=>{
+                this.loading_table = false
+                console.log(err)
+                if(err){
+                            if(err.response.status == 401){
+                                this.store.remove_token()
+                                this.store.remove_user()
+                                localStorage.removeItem("web_token")
+                                localStorage.removeItem("web_user")
+                                this.$router.push("/login")
+                            }
+                        }
+            })
+
+        // },2000)
 
         }
     },
+    created(){
+        this.GetStore()
+    }
 };
 </script>
 
