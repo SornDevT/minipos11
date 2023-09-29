@@ -21,22 +21,25 @@
             <button type="button" class="btn btn-secondary" @click="CancelStore()">ຍົກເລີກ</button>
         </div>
         <div class="row"> 
-            <div class="col-md-4">Image</div>
+            <div class="col-md-4 text-center">
+               <img :src="image_pre" @click="$refs.img_store.click()" class=" rounded cursor-pointer " style=" width: 80%;" alt="">
+               <input type="file" ref="img_store" style=" display: none;" @change="onSelect" >
+            </div>
             <div class="col-md-8"> {{ FormStore }}
                 <hr>
                 <label  class="form-label fs-6">ຊື່ສິນຄ້າ: <span class=" text-danger">*</span>  </label>
                 <input type="text" class="form-control mb-2" v-model="FormStore.name"  placeholder="....." >
 
                 <label  class="form-label fs-6">ຈຳນວນ: <span class=" text-danger">*</span></label>
-                <input type="text" class="form-control mb-2" v-model="FormStore.amount" placeholder="....." >
+                <cleave :options="options" class="form-control mb-2" v-model="FormStore.amount" placeholder="....." />
                 <div class="row">
                     <div class="col-md-6">
                         <label  class="form-label fs-6">ລາຄາຊື້: <span class=" text-danger">*</span></label>
-                <input type="text" class="form-control mb-2" v-model="FormStore.price_buy" placeholder="....." >
+                <cleave :options="options"  class="form-control mb-2" v-model="FormStore.price_buy" placeholder="....." />
                     </div>
                     <div class="col-md-6">
                         <label  class="form-label fs-6">ລາຄາຂາຍ: <span class=" text-danger">*</span></label>
-                <input type="text" class="form-control mb-2" v-model="FormStore.price_sell" placeholder="....." >
+                <cleave :options="options"  class="form-control mb-2" v-model="FormStore.price_sell" placeholder="....." />
                     </div>
                 </div>
            
@@ -63,16 +66,16 @@
      
             </div>
             <div class=" d-flex">
-                <input type="text" class=" form-control me-2" placeholder="ຄົ້ນຫາ....">
+                <input type="text" class=" form-control me-2" placeholder="ຄົ້ນຫາ...." v-model="search" @keyup.enter="GetStore()" >
                 <button type="button" class="btn btn-primary" @click="AddStore()"> <i class='bx bx-user-plus'></i> ເພີ່ມຂໍ້ມູນ </button>
             </div>
         </div>
-
+        <button @click="showAlert">Hello world</button>
       <table class="table table-bordered">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>ຮູບພາບ</th>
+            <th width="80">ID</th>
+            <th width="120">ຮູບພາບ</th>
             <th>ຊື່ສິນຄ້າ</th>
             <th>ລາຄາຊື້</th>
             <th>ຈັດການ</th>
@@ -90,11 +93,14 @@
           <tbody v-else>
           <tr v-for="list in StoreData.data" :key="list.id">
             <td>{{ list.id }}</td>
-            <td>{{ list.image }}</td>
+            <td>
+                <img :src="url+'/assets/img/'+list.image" v-if="list.image" class=" rounded w-100" alt="">
+                <img :src="url+'/assets/img/no_img.jpg'" v-else class=" rounded w-100" alt="">
+            </td>
             <td>
              {{ list.name }}
             </td>
-            <td>{{ list.price_buy }}</td>
+            <td>{{ formatPrice(list.price_buy) }}</td>
             <td>
               <div class="dropdown">
                 <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
@@ -120,6 +126,9 @@
 </template>
 
 <script>
+
+import Cleave from 'vue-cleave-component';
+
 import axios from 'axios';
 import { useStore } from '../store/auth';
 export default {
@@ -130,6 +139,7 @@ export default {
     },
     data() {
         return {
+            search:'',
             list_num: 5,
             Sort:"asc",
             StoreData:[],
@@ -137,18 +147,35 @@ export default {
             ShowForm:false,
             FormStore:{
                 name:'',
+                image:'',
                 amount:'',
                 price_buy:'',
                 price_sell:''
             },
             FormType: true,
             loading:false,
-            loading_table:false
+            loading_table:false,
+            options:{
+                //   prefix: '₭ ',
+                  numeral: true,
+                  numeralPositiveOnly: true,
+                  noImmediatePrefix: true,
+                  rawValueTrimPrefix: true,
+                  numeralIntegerScale: 10,
+                  numeralDecimalScale: 2,
+                  numeralDecimalMark: ',',
+                  delimiter: '.'
+            },
+            image_pre: window.location.origin+"/assets/img/add_img.png",
+            url: window.location.origin
         };
     },
 
     mounted() {
         
+    },
+    components:{
+        Cleave
     },
 
     computed:{
@@ -167,6 +194,38 @@ export default {
     },
 
     methods: {
+        showAlert() {
+            // Use sweetalert2
+            // this.$swal('The Internet?',
+            // 'That thing is still around?',
+            // 'success');
+        this.$swal({
+                // toast: true,
+                position: 'center',
+                icon: 'error',
+                title: 'ຜິດຜາດ!',
+                text: "You won't be able to revert this!",
+                showConfirmButton: false,
+                timer: 4500
+        });
+
+
+            },
+
+        onSelect(event){
+            // console.log(event)
+            this.FormStore.image = event.target.files[0]
+            let reder = new FileReader()
+            reder.readAsDataURL(this.FormStore.image)
+            reder.addEventListener("load", function(){
+                this.image_pre = reder.result
+            }.bind(this),false)
+        },
+        formatPrice(value) {
+            let val = (value / 1).toFixed(0).replace(",", ".");
+            return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        },
+
         ChacngSort(){
             if(this.Sort=="asc"){
                 this.Sort = "desc"
@@ -180,6 +239,8 @@ export default {
             this.FormStore.amount = ''
             this.FormStore.price_buy = ''
             this.FormStore.price_sell = ''
+            this.image = ''
+            this.image_pre = this.url + "/assets/img/add_img.png"
             this.ShowForm = true
             this.FormType = true
         },
@@ -193,14 +254,32 @@ export default {
                 this.loading = true
                 // setTimeout(()=>{
                     // console.log('Run.....')
-                    axios.post("api/store/add",this.FormStore,{ headers:{ Authorization: 'Bearer '+ this.store.get_token}}).then((res)=>{
+                    axios.post("api/store/add",this.FormStore,{ headers:{ "content-type":"multipart/form-data", Authorization: 'Bearer '+ this.store.get_token}}).then((res)=>{
                         
                         this.loading = false
                         if(res.data.success){
                             this.ShowForm = false
                             this.GetStore()
-                        } else {
 
+                            this.$swal({
+                                    toast: true,
+                                    position: 'top-end',
+                                    icon: 'success',
+                                    title: res.data.message,
+                                    showConfirmButton: false,
+                                    timer: 3000
+                            })
+                            
+                        } else {
+                            this.$swal({
+                                    // toast: true,
+                                    position: 'center',
+                                    icon: 'error',
+                                    title: 'ຜິດຜາດ!',
+                                    text: res.data.message,
+                                    showConfirmButton: false,
+                                    timer: 6500
+                            })
                         }
                     }).catch((err)=>{
                         this.loading = false
@@ -222,13 +301,33 @@ export default {
             } else {
                 // ອັບເດດຂໍ້ມູນ
                 this.loading = true
-                axios.post(`api/store/update/${this.EditID}`,this.FormStore,{ headers:{ Authorization: 'Bearer '+ this.store.get_token}}).then((res)=>{
+                axios.post(`api/store/update/${this.EditID}`,this.FormStore,{ headers:{ "content-type":"multipart/form-data", Authorization: 'Bearer '+ this.store.get_token}}).then((res)=>{
                         
                         this.loading = false
                         if(res.data.success){
                             this.ShowForm = false
                             this.GetStore()
+
+                            this.$swal({
+                                    toast: true,
+                                    position: 'top-end',
+                                    icon: 'success',
+                                    title: res.data.message,
+                                    showConfirmButton: false,
+                                    timer: 3000
+                            })
+
                         } else {
+
+                            this.$swal({
+                                    // toast: true,
+                                    position: 'center',
+                                    icon: 'error',
+                                    title: 'ຜິດຜາດ!',
+                                    text: res.data.message,
+                                    showConfirmButton: false,
+                                    timer: 6500
+                            })
 
                         }
                     }).catch((err)=>{
@@ -258,6 +357,14 @@ export default {
                     this.FormStore = res.data
                     this.ShowForm = true
 
+                    // ສະແດງຮູບພາບຈາກຂໍ້ມູນ
+                    
+                    if(res.data.image){
+                        this.image_pre = this.url + "/assets/img/" + res.data.image
+                    } else {
+                        this.image_pre = this.url + "/assets/img/no_img.jpg"
+                    }
+
                 }).catch((err)=>{
                 console.log(err)
                 if(err){
@@ -273,33 +380,68 @@ export default {
 
         },
         DeleteStore(id){
-            axios.delete(`api/store/delete/${id}`,{ headers:{ Authorization: 'Bearer '+ this.store.get_token}}).then((res)=>{
 
-                    if(res.data.success){
-                        this.GetStore()
-                    } else {
 
-                    }
+            this.$swal({
+                    title: 'ທ່ານແນ່ໃຈບໍ່?',
+                    text: "ທີ່ຈະລຶບຂໍ້ມູນນີ້!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'ຍືນຍັນລຶບ!',
+                    cancelButtonText: 'ຍົກເລີກ'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
 
-                }).catch((err)=>{
-                console.log(err)
-                if(err){
-                        if(err.response.status == 401){
-                            this.store.remove_token()
-                            this.store.remove_user()
-                            localStorage.removeItem("web_token")
-                            localStorage.removeItem("web_user")
-                            this.$router.push("/login")
+                            axios.delete(`api/store/delete/${id}`,{ headers:{ Authorization: 'Bearer '+ this.store.get_token}}).then((res)=>{
+
+                                    if(res.data.success){
+                                        this.GetStore()
+                                        this.$swal({
+                                                    toast: true,
+                                                    position: 'top-end',
+                                                    icon: 'success',
+                                                    title: res.data.message,
+                                                    showConfirmButton: false,
+                                                    timer: 3000
+                                            })
+                                    } else {
+                                        this.$swal({
+                                                    // toast: true,
+                                                    position: 'center',
+                                                    icon: 'error',
+                                                    title: 'ຜິດຜາດ!',
+                                                    text: res.data.message,
+                                                    showConfirmButton: false,
+                                                    timer: 6500
+                                            })
+                                    }
+
+                                }).catch((err)=>{
+                                console.log(err)
+                                if(err){
+                                        if(err.response.status == 401){
+                                            this.store.remove_token()
+                                            this.store.remove_user()
+                                            localStorage.removeItem("web_token")
+                                            localStorage.removeItem("web_user")
+                                            this.$router.push("/login")
+                                        }
+                                    }
+                                })
+                        
                         }
-                    }
-                })
+                    })
+
+            
         },
         GetStore(page){
             this.loading_table = true
 
             // setTimeout(()=>{
 
-            axios.get(`api/store?page=${page}&sort=${this.Sort}&list_num=${this.list_num}`,{ headers:{ Authorization: 'Bearer '+ this.store.get_token}}).then((res)=>{
+            axios.get(`api/store?page=${page}&sort=${this.Sort}&list_num=${this.list_num}&search=${this.search}`,{ headers:{ Authorization: 'Bearer '+ this.store.get_token}}).then((res)=>{
                 this.loading_table = false
                 this.StoreData = res.data
 
@@ -323,6 +465,13 @@ export default {
     },
     created(){
         this.GetStore()
+    },
+    watch:{
+        search(){
+            if(this.search == ''){
+                this.GetStore()
+            }
+        }
     }
 };
 </script>
