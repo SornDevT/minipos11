@@ -21,7 +21,10 @@
             <button type="button" class="btn btn-secondary" @click="CancelStore()">ຍົກເລີກ</button>
         </div>
         <div class="row"> 
-            <div class="col-md-4 text-center">
+            <div class="col-md-4 text-center" style=" position: relative; ">
+                <button type="button" class="btn rounded-pill btn-icon btn-danger img-remove" @click="RemoveImage()"  v-if="FormStore.image" >
+                    <i class='bx bxs-x-circle fs-3'></i>
+              </button>
                <img :src="image_pre" @click="$refs.img_store.click()" class=" rounded cursor-pointer " style=" width: 80%;" alt="">
                <input type="file" ref="img_store" style=" display: none;" @change="onSelect" >
             </div>
@@ -211,7 +214,12 @@ export default {
 
 
             },
+        RemoveImage(){
 
+            this.FormStore.image = ""
+            this.image_pre = window.location.origin+"/assets/img/add_img.png"
+
+            },
         onSelect(event){
             // console.log(event)
             this.FormStore.image = event.target.files[0]
@@ -476,6 +484,10 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-
+<style scoped>
+    .img-remove{
+        position: absolute;
+        top: 5px;
+        right: 5px;
+    }
 </style>
