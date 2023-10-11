@@ -8,15 +8,15 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     
     <!-- Core CSS -->
-    <link rel="stylesheet" href="assets/vendor/css/core.css?id=7a74a9d0cfeabd283069bfaa3de33eaa">
-    <link rel="stylesheet" href="assets/vendor/css/theme-default.css?id=3d127db9612959fd1b1297d4adb3d55e">
-    <link rel="stylesheet" href="assets/css/demo.css?id=8a804dae81f41c0f9fcbef2fa8316bdd">
-    <link rel="stylesheet" href="assets/css/font_lao.css">
+    <link rel="stylesheet" href="{{ url('assets/vendor/css/core.css') }}">
+    <link rel="stylesheet" href="{{ url('assets/vendor/css/theme-default.css') }}">
+    <link rel="stylesheet" href="{{ url('assets/css/demo.css') }}">
+    <link rel="stylesheet" href="{{ url('assets/css/font_lao.css') }}">
 
-    <link rel="stylesheet" href="assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css?id=98fefe4424f0148a6e7c70b613511b33">
+    <!-- <link rel="stylesheet" href="assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css?id=98fefe4424f0148a6e7c70b613511b33"> -->
 
     <!-- Vendor Styles -->
-    <link rel="stylesheet" href="assets/vendor/libs/apex-charts/apex-charts.css">
+    <!-- <link rel="stylesheet" href="assets/vendor/libs/apex-charts/apex-charts.css"> -->
 
 
     @vite('resources/css/app.css')

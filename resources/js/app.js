@@ -5,6 +5,7 @@ import App from './App.vue';
 import router from './router';
 import SideMenu from './components/SideMenu.vue';
 import Pagination from "./components/Pagination.vue";
+import Grapboard from "./components/GrapBoard.vue";
 import { createPinia } from 'pinia';
 const pinia = createPinia();
 
@@ -15,6 +16,7 @@ import 'sweetalert2/dist/sweetalert2.min.css';
 const app = createApp(App);
 app.component('SideMenu',SideMenu);
 app.component('Pagination',Pagination);
+app.component('Grapboard',Grapboard);
 app.use(VueSweetalert2);
 app.use(pinia);
 app.use(router);

@@ -181,6 +181,13 @@ export default {
         }
     },
     methods: {
+       async openLink(link){
+            const response = await fetch(`${link}`,{ headers:{ Authorization: 'Bearer '+ this.store.get_token}});
+            const html = await response.text();
+            const blob = new Blob([html],{ type: "text/html"});
+            const blobUrl = URL.createObjectURL(blob);
+            window.open(blobUrl, "_blank");
+        },
         Pay(){
             $("#dialog_pay").modal("show")
         },
@@ -202,6 +209,8 @@ export default {
 
                     // ປິດ Dialog
                     $("#dialog_pay").modal("hide")
+
+                    this.openLink(window.location.origin+"/api/bills/print/"+res.data.bill_id)
 
                     this.$swal({
                                     toast: true,
@@ -245,21 +254,51 @@ export default {
         AddProduct(id){
             //console.log(id)
             let item = this.StoreData.data.find((i)=>i.id == id)
+
             // console.log(item)
-            let list_order_item = this.listOrder.find((i)=>i.id == id)
+            if(item.amount>0){
 
-            if(list_order_item){
+                let list_order_item = this.listOrder.find((i)=>i.id == id)
+                if(list_order_item){
 
-                list_order_item.order_amount++
-                
+                    let old_list_order = this.listOrder.find((i)=>i.id == id)
+
+                    if((item.amount - old_list_order.order_amount)>0){
+                        list_order_item.order_amount++
+                    } else {
+                        this.$swal({
+                                    // toast: true,
+                                    position: 'center',
+                                    icon: 'error',
+                                    title: 'ບໍ່ສາມາດຂາຍໄດ້!',
+                                    text: 'ສິນຄ້າດັ່ງກ່າວໝົດໃນສະຕ໋ອກ',
+                                    showConfirmButton: false,
+                                    timer: 6500
+                            })
+                    }
+                    
+
+
+                } else {
+                    this.listOrder.push({
+                        id: item.id,
+                        name: item.name,
+                        order_amount: 1,
+                        price_sell: item.price_sell
+                    })
+                }
             } else {
-                this.listOrder.push({
-                    id: item.id,
-                    name: item.name,
-                    order_amount: 1,
-                    price_sell: item.price_sell
-                })
+                this.$swal({
+                                    // toast: true,
+                                    position: 'center',
+                                    icon: 'error',
+                                    title: 'ບໍ່ສາມາດຂາຍໄດ້!',
+                                    text: 'ສິນຄ້າດັ່ງກ່າວໝົດໃນສະຕ໋ອກ',
+                                    showConfirmButton: false,
+                                    timer: 6500
+                            })
             }
+            
             
         },
         RemoveProduct(id){

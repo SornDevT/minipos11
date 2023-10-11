@@ -1,5 +1,6 @@
 <template>
     <div>
+        <Grapboard />
         <div class="card">
   <h5 class="card-header">ລາຍການ ສະຕ໋ແກສິນຄ້າ
         <div class="spinner-grow spinner-grow-sm text-success" v-if="loading" role="status">

@@ -6,12 +6,45 @@ use Illuminate\Http\Request;
 use App\Models\Transection;
 use App\Models\Bill;
 use App\Models\Bill_list;
+use App\Models\Store;
 
 class TransectionController extends Controller
 {
     //
     public function __construct(){
         $this->middleware("auth:api");
+    }
+
+    public function index(Request $request){
+
+        $sort = \Request::get("sort");
+        $list_num = \Request::get("list_num");
+        $month_type = $request->month_type;
+        $dmy = $request->dmy;
+        // 2023-10-10
+        $m = explode("-",$dmy)[1];
+        $y = explode("-",$dmy)[0];
+
+        if($month_type == "m"){
+
+            $tran = Transection::orderBy("id",$sort)
+            ->whereYear("created_at",$y)
+            ->whereMonth("created_at",$m)
+            ->paginate($list_num)
+            ->toArray();
+
+        } else if($month_type == "y"){
+
+            $tran = Transection::orderBy("id",$sort)
+            ->whereYear("created_at",$y)
+            ->paginate($list_num)
+            ->toArray();
+
+        }
+
+        return array_reverse($tran);
+
+
     }
 
     public function add(Request $request){
@@ -93,6 +126,14 @@ class TransectionController extends Controller
                     ]);
                     $bill_list->save();
 
+                    // ອັບເດດຕັດສະຕ໋ອກສິນຄ້າ
+                    $store = Store::find($item['id']);
+
+                    $store_update = Store::find($item['id']);
+                    $store_update->update([
+                        "amount" => $store->amount - $item['order_amount']
+                    ]);
+
 
             }
 
@@ -102,9 +143,11 @@ class TransectionController extends Controller
         } catch (\Illuminate\Database\QueryException $ex){
             $success = false;
             $message = $ex->getMessage();
+            $bill_id = null;
         }
 
         $response = [
+            "bill_id" => $bill_id,
             "success" => $success,
             "message" => $message
         ];
