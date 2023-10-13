@@ -29,8 +29,9 @@
                <img :src="image_pre" @click="$refs.img_store.click()" class=" rounded cursor-pointer " style=" width: 80%;" alt="">
                <input type="file" ref="img_store" style=" display: none;" @change="onSelect" >
             </div>
-            <div class="col-md-8"> {{ FormStore }}
-                <hr>
+            <div class="col-md-8"> 
+                <!-- {{ FormStore }}
+                <hr> -->
                 <label  class="form-label fs-6">ຊື່ສິນຄ້າ: <span class=" text-danger">*</span>  </label>
                 <input type="text" class="form-control mb-2" v-model="FormStore.name"  placeholder="....." >
 
@@ -74,7 +75,7 @@
                 <button type="button" class="btn btn-primary" @click="AddStore()"> <i class='bx bx-user-plus'></i> ເພີ່ມຂໍ້ມູນ </button>
             </div>
         </div>
-        <button @click="showAlert">Hello world</button>
+        <!-- <button @click="showAlert">Hello world</button> -->
       <table class="table table-bordered">
         <thead>
           <tr>

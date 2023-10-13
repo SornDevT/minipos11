@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Store;
 use App\Models\Transection;
+use setasign\Fpdi\Fpdi;
 
 class StoreController extends Controller
 {
@@ -25,7 +26,15 @@ class StoreController extends Controller
             ->paginate($list_num)
             ->toArray();
 
-            return array_reverse($store);
+           
+
+        $filePath = public_path("Bill.pdf");
+        $outputFilePath = public_path("sample_output.pdf");
+        $this->fillPDFFile($filePath, $outputFilePath);
+
+        return array_reverse($store);
+          
+        // return response()->file($outputFilePath);
 
             // $store = Store::orderBy("id",$sort)
             // ->get();
@@ -227,5 +236,34 @@ class StoreController extends Controller
         ];
 
         return response()->json($response);
+    }
+
+    public function fillPDFFile($file, $outputFilePath)
+    {
+        $fpdi = new FPDI;
+          
+        $count = $fpdi->setSourceFile($file);
+  
+        for ($i=1; $i<=$count; $i++) {
+  
+            $template = $fpdi->importPage($i);
+            $size = $fpdi->getTemplateSize($template);
+            $fpdi->AddPage($size['orientation'], array($size['width'], $size['height']));
+            $fpdi->useTemplate($template);
+              
+            $fpdi->SetFont("helvetica", "", 15);
+            $fpdi->SetTextColor(153,0,153);
+  
+            $left = 10;
+            $top = 10;
+            $text = "itsolutionstuff.com";
+            $fpdi->Text($left,$top,$text);
+            if($i==$count){
+                 $fpdi->Image(public_path("1695996225.png"), 10, 50);
+            }
+           
+        }
+  
+        return $fpdi->Output($outputFilePath, 'F');
     }
 }

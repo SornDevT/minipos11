@@ -5,16 +5,15 @@
       <div class="card-body">
         <div class="d-flex align-items-start justify-content-between">
           <div class="content-left">
-            <span>Session</span>
+            <span>ລາຍຮັບ</span>
             <div class="d-flex align-items-end mt-2">
-              <h4 class="mb-0 me-2">21,459</h4>
+              {{ formatPrice(data_income)  }} ກີບ 
               <small class="text-success">(+29%)</small>
             </div>
-            <p class="mb-0">Total Users</p>
           </div>
           <div class="avatar">
             <span class="avatar-initial rounded bg-label-primary">
-              <i class="bx bx-user bx-sm"></i>
+              <i class='bx bx-line-chart bx-sm'></i>
             </span>
           </div>
         </div>
@@ -26,16 +25,15 @@
       <div class="card-body">
         <div class="d-flex align-items-start justify-content-between">
           <div class="content-left">
-            <span>Paid Users</span>
+            <span>ລາຍຈ່າຍ</span>
             <div class="d-flex align-items-end mt-2">
-              <h4 class="mb-0 me-2">4,567</h4>
+              {{ formatPrice(data_expense) }}
               <small class="text-success">(+18%)</small>
             </div>
-            <p class="mb-0">Last week analytics </p>
           </div>
           <div class="avatar">
             <span class="avatar-initial rounded bg-label-danger">
-              <i class="bx bx-user-check bx-sm"></i>
+              <i class='bx bx-line-chart-down bx-sm'></i>
             </span>
           </div>
         </div>
@@ -47,16 +45,15 @@
       <div class="card-body">
         <div class="d-flex align-items-start justify-content-between">
           <div class="content-left">
-            <span>Active Users</span>
+            <span>ກຳໄລ</span>
             <div class="d-flex align-items-end mt-2">
-              <h4 class="mb-0 me-2">19,860</h4>
+              {{ formatPrice(data_income-data_expense) }}
               <small class="text-danger">(-14%)</small>
             </div>
-            <p class="mb-0">Last week analytics</p>
           </div>
           <div class="avatar">
             <span class="avatar-initial rounded bg-label-success">
-              <i class="bx bx-group bx-sm"></i>
+              <i class='bx bx-bar-chart-alt bx-sm'></i>
             </span>
           </div>
         </div>
@@ -68,16 +65,16 @@
       <div class="card-body">
         <div class="d-flex align-items-start justify-content-between">
           <div class="content-left">
-            <span>Pending Users</span>
+            <span>ຍອດໃນສະຕ໋ອກ</span>
             <div class="d-flex align-items-end mt-2">
-              <h4 class="mb-0 me-2">237</h4>
+              {{ formatPrice(this.store) }}
               <small class="text-success">(+42%)</small>
             </div>
-            <p class="mb-0">Last week analytics</p>
+          
           </div>
           <div class="avatar">
             <span class="avatar-initial rounded bg-label-warning">
-              <i class="bx bx-user-voice bx-sm"></i>
+              <i class='bx bx-store-alt bx-sm'></i>
             </span>
           </div>
         </div>
@@ -88,12 +85,20 @@
 </template>
 
 <script>
+import axios from 'axios';
+import { useStore } from '../store/auth';
 export default {
     name: 'Minipos11GrapBoard',
-
+    setup(){
+      const store = useStore()
+      return {store}
+    },
     data() {
         return {
-            
+            data_income:0,
+            data_expense:0,
+            data_store:0,
+            $store:0
         };
     },
 
@@ -102,8 +107,33 @@ export default {
     },
 
     methods: {
-        
+      formatPrice(value) {
+            let val = (value / 1).toFixed(0).replace(",", ".");
+            return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        },
+        GetGrap(){
+          axios.get(`api/report/grapboard`,{ headers:{ Authorization: 'Bearer '+ this.store.get_token}}).then((res)=>{
+            this.data_income = res.data.income 
+            this.data_expense = res.data.expense
+            this.store = res.data.store
+              
+            }).catch((err)=>{
+                console.log(err)
+                if(err){
+                            if(err.response.status == 401){
+                                this.store.remove_token()
+                                this.store.remove_user()
+                                localStorage.removeItem("web_token")
+                                localStorage.removeItem("web_user")
+                                this.$router.push("/login")
+                            }
+                        }
+            })
+        }
     },
+    created(){
+      this.GetGrap()
+    }
 };
 </script>
 

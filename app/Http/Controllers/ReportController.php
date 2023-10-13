@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Transection;
+use App\Models\Store;
 
 class ReportController extends Controller
 {
@@ -100,6 +101,22 @@ class ReportController extends Controller
             "expense" => $expense,
             "sum_income" => $sum_income,
             "sum_expense" => $sum_expense
+        ];
+
+        return response()->json($response);
+
+    }
+
+    public function grapboard(){
+
+        $income = Transection::where("tran_type","income")->sum("price");
+        $expense = Transection::where("tran_type","expense")->sum("price");
+        $store = Store::sum("amount");
+
+        $response = [
+            "income" => $income,
+            "expense" => $expense,
+            "store" => $store,
         ];
 
         return response()->json($response);
